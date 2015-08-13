@@ -5,14 +5,18 @@
 	</head>
 	<body>
 		<input type=file id=files name=files[] multiple>
-		<div id=drop>Drop files here</div>
+		<div id=drop style=padding:10px;background:gray;border:dotted>Drop files here</div>
 		<div id=output></div>
 		<div id=debug></div>
 		<script>
 	       		// todo: check for FileReader etc
 			function handleFileSelect(e) {
-                		var files = e.target.files; //  FileList obj
+				console.info(e)
+                		e.stopPropagation();
+				e.preventDefault();
+				var files = e.dataTransfer.files; //  FileList obj
 				// files is a FileList of File objects
+				console.log(files)
 				var output = [];
 				    for (var i = 0, f; f = files[i]; i++) {
 					          output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
@@ -23,9 +27,14 @@
 				        debug.innerHTML = '<ul>' + output.join('') + '</ul>';
 			}
 
-			files.addEventListener('change', handleFileSelect, false);
-			
+			function handleDragOver(e) {
+				e.stopPropagation();
+				e.preventDefault();
+				e.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+			}
 
+			drop.addEventListener('dragover', handleDragOver, false);
+			drop.addEventListener('drop', handleFileSelect , false); 
 		</script>
 	</body>
 </html>
