@@ -3,62 +3,16 @@
                 <title>DEMO A FEW COMPONENTS</title>
                 <style>img{width:50px;max-height:50px;display:block;}</style>
         </head>
-        <body>
-                <input type=file id=files name=files[] multiple>
-                <div id=drop style=padding:10px;background:gray;border:dotted>Drop files here</div>
-                <div id=output></div>
-                <div id=debug></div>
-                <script>
-// todo: check for FileReader etc
-function handleFileSelect(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        var files = e.dataTransfer.files; //  FileList obj
-        // files is a FileList of File objects
-        console.log(files)
-        for (var i = 0, f; f = files[i]; i++) {
-                if(!f.type.match('image.*')) {
-                        continue;
-                }
-                var reader = new FileReader();
-                reader.onload=(function(theFile) {
-                        return function(e) {
-                                var img  = document.createElement('img');
-                                img.src =e.target.result;
-                                output.insertBefore(img, null);
-                                var input = document.createElement('input');
-                                input.type = 'text';
-                                input.value = e.target.result;
-                                output.insertBefore(input, null);
+        <body ng-app="dataUrlMaker">
+            <div ng-controller="Controller">
+                {{files}}
+                <div uploader ></div> 
+                <div files></div> 
 
-                        }
-                })(f);
-                            reader.readAsDataURL(f);
-                      // Closure to capture the file information.
-                      // reader.onload = (function(theFile) {
-                      //                 return function(e) {
-                      //                                   // Render thumbnail.
-                      //                                   var span = document.createElement('span');
-                      //                                             span.innerHTML = ['<img class="thumb" src="', e.target.result,
-                      //                                                               '" title="', escape(theFile.name), '"/>'].join('');
-                      //                                                       document.getElementById('debug').insertBefore(span, null);
-                      //                                                               };
-                      //                       })(f);
-                      //
-                      //       // Read in the image file as a data URL.
-                      //       reader.readAsDataURL(f);
-        };
-}
+            </div>
 
-function handleDragOver(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
-}
-
-drop.addEventListener('dragover', handleDragOver, false);
-drop.addEventListener('drop', handleFileSelect , false); 
-                </script>
+            <script src="bower_components/angular/angular.js"></script>
+            <script src="script.js"></script>
         </body>
 </html>
 
