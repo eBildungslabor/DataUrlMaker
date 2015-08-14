@@ -2,9 +2,6 @@
     'use strict';
     angular.module('dataUrlMaker', [])
     .controller('Controller', ['$scope', 'FileList', function($scope, FileList) {
-        $scope.$watchCollection("FileList.files", function() {
-            console.log('changed', FileList); 
-        });
     }])
     .factory('FileList', function() {
         var service = {};
@@ -45,6 +42,36 @@
             scope: {
             },
             template: "<input type='file' multiple>"
+        };
+    }])
+    .directive('dragDropUploader', ['FileList', function(FileList) {
+
+        function link(scope, element, attrs) {
+            
+            element[0].addEventListener('dragover', handleDragOver);
+            element[0].addEventListener('drop', handleFileSelect);
+
+            function handleFileSelect(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                scope.$apply(function() {
+                    FileList.files.push.apply(FileList.files, e.dataTransfer.files);
+                    console.log(FileList.files); 
+                });
+            }
+
+            function handleDragOver(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+            }
+        }
+
+        return {
+            link: link,
+            scope: {
+            },
+            template: "<div style=padding:10px;background:gray;border:dotted>Drop files here</div>"
         };
     }]);
 })(window.angular);
