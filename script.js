@@ -6,20 +6,42 @@
     .factory('FileList', function() {
         var service = {};
         service.files = [];
+        service.getThumbs = function() {
+            // do this automatically!!
+            service.files.forEach(function(file) {
+                if(file.status) return;
+                file.status = "loading";
+                var reader = new FileReader();
+                reader.onload=(function(theFile) {
+                    return function(e) {
+                        console.log(file);
+                        file.url = e.target.result;
+                        file.status = "loaded";
+                    }
+                })(file);
+                reader.readAsDataURL(file);
+            });
+            var reader = new FileReader(); 
+        };
         return service;
     })
-    .directive('files', ['FileList', function(FileList) {
+    .directive('files', ['FileList', '$interval', function(FileList, $interval) {
 
         function controller($scope) {
             console.log("files", FileList.files);
             $scope.files = FileList.files;
+                                                                          
+           // $scope.$watch('files', function() { console.log("files changed"); }, true);
+            $interval(function() {
+                $scope.files = FileList.files;                               // uh quick hack so I can sleep
+            }, 100); 
         }
 
         return {
             controller: controller,
             scope: {
             },
-            template: "<ul><li ng-repeat='file in files'>File: {{file.name}} {{file.type}} {{file.size}} bytes</li></ul>"
+            template: "<ul><li ng-repeat='file in files'>File: {{file.name}} {{file.status}} {{file.type}} {{file.size}} bytes <img ng-src='{{file.url}}'></li></ul>"
         };
     }])
     .directive('uploader', ['FileList', function(FileList) {
@@ -30,10 +52,8 @@
             input[0].addEventListener('change', handleFileSelect);
 
             function handleFileSelect(e) {
-                scope.$apply(function() {
-                    FileList.files.push.apply(FileList.files, e.target.files);
-                    console.log(FileList.files); 
-                });
+                FileList.files.push.apply(FileList.files, e.target.files);
+                console.log(FileList.files); 
             }
         }
 
@@ -56,6 +76,7 @@
                 e.preventDefault();
                 scope.$apply(function() {
                     FileList.files.push.apply(FileList.files, e.dataTransfer.files);
+                    FileList.getThumbs();
                     console.log(FileList.files); 
                 });
             }
