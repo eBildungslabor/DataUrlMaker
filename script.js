@@ -7,14 +7,14 @@
         var service = {};
         service.files = [];
         service.getThumbs = function() {
-            // do this automatically!!
+            // do this automatically!!, also confusing name, doesnt return files!
             service.files.forEach(function(file) {
                 if(file.status) return;
                 file.status = "loading";
                 var reader = new FileReader();
                 reader.onload=(function(theFile) {
                     return function(e) {
-                        console.log(file);
+                        console.log(file, "loaded");
                         file.url = e.target.result;
                         file.status = "loaded";
                     }
@@ -29,11 +29,10 @@
 
         function controller($scope) {
             console.log("files", FileList.files);
-            $scope.files = FileList.files;
-                                                                          
-           // $scope.$watch('files', function() { console.log("files changed"); }, true);
-            $interval(function() {
-                $scope.files = FileList.files;                               // uh quick hack so I can sleep
+            $scope.FileList = FileList;
+
+            $scope.$watch('files', function() { console.log("files changed"); }, true);
+            $interval(function() { // uh quick hack 
             }, 100); 
         }
 
@@ -41,19 +40,22 @@
             controller: controller,
             scope: {
             },
-            template: "<ul><li ng-repeat='file in files'>File: {{file.name}} {{file.status}} {{file.type}} {{file.size}} bytes <img width=40 ng-src='{{file.url}}'></li></ul>"
+            templateUrl: '_file.html'
         };
     }])
     .directive('uploader', ['FileList', function(FileList) {
 
         function link(scope, element, attrs) {
-            
+
             var input = element.find("input");
             input[0].addEventListener('change', handleFileSelect);
 
             function handleFileSelect(e) {
-                FileList.files.push.apply(FileList.files, e.target.files);
-                console.log(FileList.files); 
+                scope.$apply(function() {
+                    FileList.files.push.apply(FileList.files, e.target.files);
+                    FileList.getThumbs();
+                    console.log(FileList.files); 
+                });
             }
         }
 
@@ -67,7 +69,7 @@
     .directive('dragDropUploader', ['FileList', function(FileList) {
 
         function link(scope, element, attrs) {
-            
+
             element[0].addEventListener('dragover', handleDragOver);
             element[0].addEventListener('drop', handleFileSelect);
 
@@ -94,5 +96,11 @@
             },
             template: "<div style=padding:10px;background:gray;border:dotted>Drop files here</div>"
         };
-    }]);
+    }])
+    .directive('selectOnClick', function() {
+        function link(scope, element, attrs) {      
+            element.on("click", function() { this.select(); });
+        }
+        return {link:link};
+    });
 })(window.angular);

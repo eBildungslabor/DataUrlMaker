@@ -1,0 +1,14 @@
+<div>
+    <!-- {{FileList.files}} -->
+    <md-list>
+    <md-list-item class="md-2-line" ng-repeat="file in FileList.files">
+        <div class="md-list-item-text">
+            <h3>{{file.name}}</h3>
+            <p>{{file.status}} {{file.type}} {{file.size}} bytes</p>                                                           
+            <img width='40' ng-src='{{file.url}}'>
+            <input type='text' value='{{file.url}}' select-on-click>
+
+        </div>
+    </md-list-item>
+</md-list>
+</div>
