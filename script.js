@@ -1,6 +1,6 @@
 (function(angular) {
     'use strict';
-    angular.module('dataUrlMaker', [])
+    angular.module('DataUrlMaker', ['ngMaterial'])
     .controller('Controller', ['$scope', 'FileList', function($scope, FileList) {
     }])
     .factory('FileList', function() {
@@ -41,7 +41,7 @@
             controller: controller,
             scope: {
             },
-            template: "<ul><li ng-repeat='file in files'>File: {{file.name}} {{file.status}} {{file.type}} {{file.size}} bytes <img ng-src='{{file.url}}'></li></ul>"
+            template: "<ul><li ng-repeat='file in files'>File: {{file.name}} {{file.status}} {{file.type}} {{file.size}} bytes <img width=40 ng-src='{{file.url}}'></li></ul>"
         };
     }])
     .directive('uploader', ['FileList', function(FileList) {
