@@ -130,9 +130,7 @@
 
         return {
             link: link,
-            scope: {
-            },
-            template: "<div style=padding:10px;background:gray;border:dotted>Drop files here</div>"
+            scope: true
         };
     }])
     .directive('selectOnClick', function() {
