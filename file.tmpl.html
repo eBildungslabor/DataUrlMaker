@@ -1,0 +1,18 @@
+<div>
+    <!-- {{FileList.files}} -->
+    <md-list>
+        <md-list-item class="md-3-line" ng-repeat="file in FileList.files">
+            <img class="md-avatar square-image" width="40" ng-src="{{file.url}}">
+            <div class="md-list-item-text">
+                <h3>{{file.name}}</h3>
+                <p>
+                Status: {{file.status}} 
+                <br>Type: {{file.type}} 
+                <br>Size: {{file.size}} bytes
+                <!--<br>Output: {{file.output|json}}--> 
+                </p>                                                           
+                <input type='text' select-on-click='{{file.url}}'>
+            </div>
+        </md-list-item>
+    </md-list>
+</div>
