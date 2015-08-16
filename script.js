@@ -1,7 +1,8 @@
 (function(angular) {
     'use strict';
     angular.module('DataUrlMaker', ['ngMaterial'])
-    .controller('Controller', ['$scope', 'FileList', function($scope, FileList) {
+    .controller('Controller', ['$scope', 'FileList', 'Pipeline', function($scope, FileList, Pipeline) {
+        $scope.Pipeline = Pipeline;
     }])
     .factory('FileList', ['Pipeline', function(Pipeline) {
         var service = {};
@@ -137,12 +138,19 @@
         function link(scope, element, attrs) { 
             scope.$watch(function() {return attrs.selectOnClick; },
                          function(newValue){
-                            element.val(attrs.selectOnClick.substr(0, 40)); 
+                            preview();
                          });
+            element.on("blur", function() { 
+                preview();
+            });
             element.on("click", function() { 
                 element.val(attrs.selectOnClick);
                 this.select();
             });
+            function preview() {
+                // for perf reasons don't show whole string unless needed
+                element.val(attrs.selectOnClick.substr(0, 40)); 
+            }
         }
         return {link:link};
     });
