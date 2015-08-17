@@ -42,8 +42,9 @@
     .factory('Pipeline', ['$q', function($q){
         var service = {};
         service.pipeline = [
-            { plugin: fill, options: {color: 'red'}},
-            { plugin: canvasToBase64, options: {mimeType: 'image/png'} }, 
+//            { plugin: fill, options: {color: 'red'}},
+//            { plugin: resize, options: {} }, 
+            { plugin: canvasToDataUrl, options: {mimeType: 'image/png'} }, 
         ];
         service.execute = function(file) {
             console.log("execute", file);
@@ -168,24 +169,6 @@
         return {link:link};
     });
 
-    // http://stackoverflow.com/a/22233902
-    function arrayBufferToCanvas(buffer, width, height) {
-        var canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        var conext = canvas.getContext("2d");
-        var imageData = context.createImageData(width, height);
-        imageData.data.set(buffer);
-        return canvas;
-    }
-
-    // http://stackoverflow.com/a/22233902
-    function canvasToArrayBuffer(canvas, width, height) {
-        var imageData = context.getImageData(0, 0, width, height);
-        var buffer = imageData.data.buffer;  // ArrayBuffer
-        return buffer;
-    }
-
     var PluginIoTypes = {
         Canvas: 'canvas',
         Base64: 'base64',
@@ -193,7 +176,7 @@
         ArrayBuffer: 'arrayBuffer'
     };
 
-    var pluginDataPassExample = {
+    var pluginDataExample = {
         mimeType: 'image/png',
         inputType: 'canvas',
         outputType: 'canvas',
@@ -202,57 +185,7 @@
         height: 0
     };
 
-    var plugin = {
-        name: "Base Plugin",
-        func: function (input, options) {
-            return input;
-        },
-        opts: {}
-    };
-
-    var arrayBufferToBase64 = angular.extend({}, plugin, {
-        name: 'Array Buffer To Base64',
-        func: function (input, options) {
-            // http://stackoverflow.com/a/9458996
-            var binary = '';
-            var bytes = new Uint8Array( input.data );
-            var len = bytes.byteLength;
-            for (var i = 0; i < len; i++) {
-                binary += String.fromCharCode( bytes[ i ] );
-            }
-            return {
-                width: input.width,
-                height: input.height,
-                mimeType: input.mimeType,
-                data: window.btoa( binary )
-            };
-        }
-    });
-
-    var arrayBufferToPng = angular.extend({}, plugin, { name: 'ArrayBuffer To PNG',
-                                          func: function (input, options) {
-        var combinedOptions = angular.extend({}, base64ToDataUri.opts, options);
-        return { 
-            width: input.width,
-            height: input.height,
-            mimeType: 'image/png',
-        };
-    }});
-
-    var base64ToDataUri = angular.extend({}, plugin, { name: 'Base64 To Data Uri',
-                                         func: function (input, options) {
-        var combinedOptions = angular.extend({}, base64ToDataUri.opts, options);
-        return { 
-            width: input.width,
-            height: input.height,
-            mimeType: 'text/plain',
-            data: 'data:' + input.mimeType + ';base64,' + input.data 
-        };
-    }});
-
-    var dataUrlToCanvas //    --- take initial data url, maybe even dataUrlToImage, imageToCanvas
-
-    var resize = angular.extend({}, plugin, {
+    var resize = { 
         inputType: 'canvas',
         outputType: 'canvas',
         name: 'Resize',
@@ -275,11 +208,12 @@
                 data: resized
             };
         }
-    }); 
+    }; 
 
     var fill = {
         inputType: 'canvas',
         outputType: 'canvas',
+        name: 'Fill',
         func: function(data, options) {
             var canvas = data.canvas;
             var ctx = canvas.getContext('2d');
@@ -295,9 +229,10 @@
         }
     };
 
-    var canvasToBase64 = {
+    var canvasToDataUrl = {
         inputType: PluginIoTypes.Canvas,
         outputType: PluginIoTypes.Url,
+        name: 'Canvas to Data URL',
         func: function(data, options) {
             var canvas = data.canvas;
             var mimeType =  options.mimeType || "image/png";
@@ -306,10 +241,10 @@
                 width: data.width,
                 height: data.height,
                 mimeType: mimeType,
-                canvas: canvas 
+                canvas: canvas,
+                url: url 
             }; 
         }
     };
-
 
 })(window.angular);
