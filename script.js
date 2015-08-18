@@ -19,6 +19,7 @@
                         file.status = "loaded";
                         file.originalDataUrl = e.target.result;
                         file.canvas = document.createElement("canvas");
+//                        document.body.appendChild(file.canvas)
                         var context = file.canvas.getContext("2d");
                         var img = document.createElement("img");
                         img.onload = function() {
@@ -28,7 +29,10 @@
                             console.log(file, "loaded");
                             var output = Pipeline.execute(file);
                             console.log("output", output);
-                            file.url = output.url; 
+                            output.then(function(value) {
+                                console.log("output value: ", value)
+                                file.url = value.url; 
+                            });
                         };
                         img.src = file.originalDataUrl;
                     }
@@ -39,46 +43,33 @@
         };
         return service;
     }])
-    .factory('Pipeline', ['$q', function($q){
+    .factory('Pipeline', [function(){
         var service = {};
+        var result;
         service.pipeline = [
-//            { plugin: fill, options: {color: 'red'}},
-//            { plugin: resize, options: {} }, 
+            //             { plugin: fill, options: {color: 'red'}},
+            // { plugin: resize, options: {width: 20, height: 25} }, 
             { plugin: canvasToDataUrl, options: {mimeType: 'image/png'} }, 
         ];
         service.execute = function(file) {
             console.log("execute", file);
-            // var result = $q();
-            // service.functions.splice(1).forEach(function (f) {
-            //     console.log(f);
-            //     result = result.then(f);
-            // });
-            var result = {
+            result = {
                 canvas: file.canvas,
                 width: file.canvas.width,
                 height: file.canvas.height
             };
-            service.pipeline.forEach(function(item, i) {
-                result = item.plugin.func(result, item.options);
-                file.output.push(result);
-                console.log(i, angular.isString(result) ? result.substr(0, 100) : result);
-            });
-            return result;
+
+            // http://www.html5rocks.com/en/tutorials/es6/promises/
+            return service.pipeline.reduce(function(chain, item) {
+                console.log('reduce', chain, item);
+                return chain.then(function() {
+                    console.log(chain, item);
+                    return item.plugin.func(result, item.options);
+                });
+            }, Promise.resolve());
         };
+    
         return service;
-
-
-        function makePromise(fn) {
-            return new Promise(function(resolve, reject) {
-                var r = fn(file);
-                if (true) {
-                    resolve(r);
-                }
-                else {
-                    reject(Error("It broke"));
-                }
-            })
-        }
     }])
     .directive('files', ['FileList', '$interval', function(FileList, $interval) {
 
@@ -190,23 +181,25 @@
         outputType: 'canvas',
         name: 'Resize',
         func: function (input, options) {
-            var combinedOptions = angular.extend({}, resize.opts, options);
-            Caman(input.canvas, function () {
-                this.resize({
-                    width: 20,
-                    height: 20
-                });
+            return new Promise(function(resolve, reject) {
+                var combinedOptions = angular.extend({}, resize.opts, options);
+                Caman(input.canvas, function () {
+                    this.resize({
+                        width: options.width,
+                        height: options.height
+                    });
 
-                // You still have to call render!
-                this.render();
+                    // You still have to call render!
+                    this.render(function() {
+                        console.log('Resize', options);
+                        resolve({ 
+                            canvas: input.canvas,
+                            width: input.width,
+                            height: input.height,
+                        });
+                    });                                      
+                });
             });
-            var resized = canvasToArrayBuffer(canvas);
-            return { 
-                width: input.width,
-                height: input.height,
-                mimeType: '??',
-                data: resized
-            };
         }
     }; 
 
@@ -215,17 +208,20 @@
         outputType: 'canvas',
         name: 'Fill',
         func: function(data, options) {
-            var canvas = data.canvas;
-            var ctx = canvas.getContext('2d');
-            ctx.rect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = options.color;
-            ctx.fill();
-            return {
-                width: data.width,
-                height: data.height,
-                mimeType: null,
-                canvas: canvas 
-            };
+            return new Promise(function(resolve, reject) {
+                var canvas = data.canvas;
+                var ctx = canvas.getContext('2d');
+                ctx.rect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = options.color;
+                ctx.fill();
+                console.log('Fill', options.color);
+                resolve({
+                    width: data.width,
+                    height: data.height,
+                    mimeType: null,
+                    canvas: canvas 
+                }); 
+            });
         }
     };
 
@@ -234,16 +230,19 @@
         outputType: PluginIoTypes.Url,
         name: 'Canvas to Data URL',
         func: function(data, options) {
-            var canvas = data.canvas;
-            var mimeType =  options.mimeType || "image/png";
-            var url = canvas.toDataURL(mimeType, options.quality || 1.0);
-            return {
-                width: data.width,
-                height: data.height,
-                mimeType: mimeType,
-                canvas: canvas,
-                url: url 
-            }; 
+            return new Promise(function(resolve, reject) {            
+                var canvas = data.canvas;
+                var mimeType =  options.mimeType || "image/png";
+                var url = canvas.toDataURL(mimeType, options.quality || 1.0);
+                console.log('canvasToDataUrl', url);
+                resolve({
+                    width: data.width,
+                    height: data.height,
+                    mimeType: mimeType,
+                    canvas: canvas,
+                    url: url 
+                });                 
+            });
         }
     };
 
