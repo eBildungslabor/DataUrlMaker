@@ -9,25 +9,20 @@
     var resize = { 
         inputType: 'canvas',
         outputType: 'canvas',
+        id: 'resize',
         name: 'Resize',
-        func: function (input, options) {
+        func: function (data, options) {
             return new Promise(function(resolve, reject) {
                 var combinedOptions = angular.extend({}, resize.opts, options);
-                Caman(input.canvas, function () {
-                    this.resize({
-                        width: options.width,
-                        height: options.height
-                    });
-
-                    // You still have to call render!
-                    this.render(function() {
-                        console.log('Resize', options);
-                        resolve({ 
-                            canvas: input.canvas,
-                            width: input.width,
-                            height: input.height,
-                        });
-                    });                                      
+                var canvas = data.canvas;
+                var newCanvas = document.createElement("canvas");
+                newCanvas.width = options.width;
+                newCanvas.height = options.height;
+                canvasResize(canvas, newCanvas, function() {
+                    data.width = options.width;
+                    data.height = options.height;
+                    data.canvas = newCanvas;
+                    resolve(data);
                 });
             });
         }
@@ -36,6 +31,7 @@
     var fill = {
         inputType: 'canvas',
         outputType: 'canvas',
+        id: 'fill',
         name: 'Fill',
         func: function(data, options) {
             return new Promise(function(resolve, reject) {
@@ -45,12 +41,7 @@
                 ctx.fillStyle = options.color;
                 ctx.fill();
                 console.log('Fill', options.color);
-                resolve({
-                    width: data.width,
-                    height: data.height,
-                    mimeType: null,
-                    canvas: canvas 
-                }); 
+                resolve(data); 
             });
         }
     };
@@ -58,27 +49,23 @@
     var canvasToDataUrl = {
         inputType: PluginIoTypes.Canvas,
         outputType: PluginIoTypes.Url,
+        id: 'canvasToDataUrl',
         name: 'Canvas to Data URL',
         func: function(data, options) {
             return new Promise(function(resolve, reject) {            
                 var canvas = data.canvas;
                 var mimeType =  options.mimeType || "image/png";
                 var url = canvas.toDataURL(mimeType, options.quality || 1.0);
-                console.log('canvasToDataUrl', url);
-                resolve({
-                    width: data.width,
-                    height: data.height,
-                    mimeType: mimeType,
-                    canvas: canvas,
-                    url: url 
-                });                 
+                data.mimeType = mimeType;
+                data.url = url;
+                resolve(data); 
             });
         }
     };
 
-    window.Plugins = {
-        resize: resize,
-        fill: fill,
-        canvasToDataUrl: canvasToDataUrl
-    };
-});
+    window.Plugins = [
+        resize,
+        fill,
+        canvasToDataUrl
+    ];
+})();
