@@ -5,7 +5,7 @@
         Url: 'url',
         ArrayBuffer: 'arrayBuffer'
     };
-
+    //todo: caman generic plugin
     var resize = { 
         inputType: 'canvas',
         outputType: 'canvas',
@@ -25,7 +25,8 @@
                     resolve(data);
                 });
             });
-        }
+        },
+        template: "<div><input type=number ng-model='options.width'>x<input type=number ng-model='options.height'></div>"
     }; 
 
     var fill = {
@@ -43,7 +44,10 @@
                 console.log('Fill', options.color);
                 resolve(data); 
             });
-        }
+        },
+        template: "<div><input type=color ng-model='options.color'></div>"
+       //1) load template into plugin cache, then use ng-include 
+        // 2) build up a directive built upon the template--- easiest? just compile that temlate as the directive  
     };
 
     var canvasToDataUrl = {
@@ -60,7 +64,8 @@
                 data.url = url;
                 resolve(data); 
             });
-        }
+        },
+        template: "<div><select type='text' ng-model='options.mimeType'><option value='image/png'>image/png</option><option value='image/jpeg'>image/jpeg</option></select></div>"
     };
 
     window.Plugins = [

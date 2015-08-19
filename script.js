@@ -1,8 +1,9 @@
 (function(angular) {
     'use strict';
     angular.module('DataUrlMaker', ['ngMaterial'])
-    .controller('Controller', ['$scope', 'FileList', 'Pipeline', function($scope, FileList, Pipeline) {
+    .controller('Controller', ['$scope', 'FileList', 'Pipeline', 'Plugins', function($scope, FileList, Pipeline, Plugins) {
         $scope.Pipeline = Pipeline;
+        $scope.Plugins = Plugins;
     }])
     .factory('FileList', ['Pipeline', function(Pipeline) {
         var service = {};
@@ -57,7 +58,7 @@
         var service = {};
         var result;
         service.pipeline = [
-            //{ pluginId: fill, options: {color: 'red'}},
+            //{ pluginId: 'fill', options: {color: 'red'}},
             //{ pluginId: 'resize', options: {width: 20, height: 25} }, 
             { pluginId: 'canvasToDataUrl', options: {mimeType: 'image/png'} }, 
         ];
@@ -81,6 +82,21 @@
         };
     
         return service;
+    }])
+    .directive('plugin', ['$compile', 'Plugins',  function($compile, Plugins) {
+        function link(scope, element, attrs) {
+            scope.options = scope.pipelineItem.options;
+            var plugin = Plugins.getPluginById(scope.pipelineItem.pluginId);
+            if(!plugin.template) return;
+            element.html(plugin.template);
+            $compile(element.contents())(scope);
+        }
+    
+        return {
+            restrict: 'A',
+            scope: {pipelineItem: '='},
+            link: link
+        }; 
     }])
     .directive('files', ['FileList', '$interval', function(FileList, $interval) {
 
