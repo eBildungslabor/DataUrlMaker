@@ -43,13 +43,23 @@
         };
         return service;
     }])
-    .factory('Pipeline', [function(){
+    .factory('Plugins', [function(){
+        var service = {};
+        service.plugins = window.Plugins;
+        service.getPluginById = function(id) {
+            var plugin = window.Plugins.filter(function(plugin) {return plugin.id === id;})[0]; 
+            if(!plugin) throw "can't find plugin " + item.plugin;
+            return plugin;
+        }; 
+        return service;
+    }])
+    .factory('Pipeline', ['Plugins', function(Plugins){
         var service = {};
         var result;
         service.pipeline = [
-            //{ plugin: fill, options: {color: 'red'}},
-            //{ plugin: 'resize', options: {width: 20, height: 25} }, 
-            { plugin: 'canvasToDataUrl', options: {mimeType: 'image/png'} }, 
+            //{ pluginId: fill, options: {color: 'red'}},
+            //{ pluginId: 'resize', options: {width: 20, height: 25} }, 
+            { pluginId: 'canvasToDataUrl', options: {mimeType: 'image/png'} }, 
         ];
         service.execute = function(file) {
             console.log("execute", file);
@@ -64,8 +74,7 @@
                 console.log('reduce', chain, item);
                 return chain.then(function() {
                     console.log(chain, item);
-                    var plugin = window.Plugins.filter(function(plugin) {return plugin.id === item.plugin;})[0]; 
-                    if(!plugin) throw "can't find plugin " + item.plugin;
+                    var plugin = Plugins.getPluginById(item.pluginId);
                     return plugin.func(result, item.options);
                 });
             }, Promise.resolve());
