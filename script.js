@@ -60,6 +60,7 @@
         service.pipeline = [
             //{ pluginId: 'fill', options: {color: 'red'}},
             //{ pluginId: 'resize', options: {width: 20, height: 25} }, 
+            //{ pluginId: 'camanFunction', options: {name: 'brightness', arguments: [50]} }, 
             { pluginId: 'canvasToDataUrl', options: {mimeType: 'image/png'} }, 
         ];
         service.execute = function(file) {

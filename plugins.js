@@ -5,7 +5,27 @@
         Url: 'url',
         ArrayBuffer: 'arrayBuffer'
     };
-    //todo: caman generic plugin
+
+    var caman = {
+        inputType: 'canvas',
+        outputType: 'canvas',
+        name: 'CamanJS Function',
+        id: 'camanFunction',
+        func: function (data, options) {
+            return new Promise(function(resolve, reject) {
+                var combinedOptions = angular.extend({}, resize.opts, options);
+                Caman(data.canvas, function () {
+                    this[options.name].apply(this, options.arguments);
+
+                    this.render(function() {
+                        console.log('Caman', options);
+                        resolve(data);
+                    });                                     
+                });
+            });
+        }
+    };
+
     var resize = { 
         inputType: 'canvas',
         outputType: 'canvas',
@@ -46,7 +66,7 @@
             });
         },
         template: "<div><input type=color ng-model='options.color'></div>"
-       //1) load template into plugin cache, then use ng-include 
+        //1) load template into plugin cache, then use ng-include 
         // 2) build up a directive built upon the template--- easiest? just compile that temlate as the directive  
     };
 
@@ -69,6 +89,7 @@
     };
 
     window.Plugins = [
+        caman,
         resize,
         fill,
         canvasToDataUrl
